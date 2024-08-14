@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Accept a payment</title>
+    <meta name="description" content="A demo of a payment on Stripe" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    />
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <style>
+    /* Reset default styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Basic styling for the body */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      /* align-items: center; */
+      height: 100vh;
+      margin: 0;
+    }
+
+    /* Form container */
+    #payment-form {
+      background: #f8f9ff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 430px;
+      max-width: 477px;
+    }
+
+    /* Form title */
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    /* Form elements */
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      font-size: 12px;
+      font-family: "Inter";
+      color: #858585;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 400;
+      font-family: "Inter";
+    }
+    input:focus {
+      border: 1px solid #ddd;
+    }
+    input[type="hidden"] {
+      display: none;
+    }
+
+    #card-element,
+    #cvc-element,
+    #expiration-element {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      background-color: white;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 400;
+      font-family: "Inter";
+    }
+
+    /* CVC and Expiration Date Container */
+    #cvc-expiration-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    #cvc-element-container,
+    #expiration-element-container {
+      width: 48%;
+    }
+
+    #cvc-element,
+    #expiration-element {
+      width: 100%;
+    }
+
+    /* Button styling */
+    #button-submit {
+      width: 87px;
+      padding: 11px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inter;
+      cursor: pointer;
+    }
+    #button-cancel {
+      width: 87px;
+      padding: 11px;
+      margin-left: 52%;
+      background-color: #0c0c0c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 400;
+      font-family: inter;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Error message styling */
+    #card-errors{
+        font-size: 10px;
+        font-family: inter;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+  </style>
+  <body>
+    <form id="payment-form">
+      <!-- Card details container -->
+      <div id="card-number-container">
+        <div id="card-element"></div>
+      </div>
+
+      <!-- CVC and Expiration Date container -->
+      <div id="cvc-expiration-container">
+        <div id="expiration-element-container">
+          <div id="expiration-element"></div>
+        </div>
+        <div id="cvc-element-container">
+          <div id="cvc-element"></div>
+        </div>
+      </div>
+      <div class="error" id="card-errors"></div>
+      <label for="cardholder-name">Cardholder Name</label>
+      <input
+        type="text"
+        id="cardholder-name"
+        placeholder="Full Name on Card"
+        required
+      />
+
+      <label for="country">Country or Region</label>
+      <input
+        type="text"
+        id="country"
+        placeholder="Select Country or Region"
+        required
+      />
+
+      <label for="promo-code">Add Promo Code</label>
+      <input
+        type="text"
+        id="promo-code"
+        placeholder="Add Promo Code"
+        required
+      />
+
+      <button id="button-cancel">Cancel</button>
+      <button id="button-submit" type="submit">Pay Now</button>
+    </form>
+    <script>
+      try {
+        const stripe = Stripe(
+          "k_test_51PONjZP6maGPcKP6K01dBZkkmOo1Vj51cQOlxVyAgTcZBKLs7vn4DbAHpugm4ExNjIqg7VctWJ5pJXiSfWe4tGcF00i6WY7Xeu"
+        );
+        const elements = stripe.elements();
+
+        const cardElement = elements.create("cardNumber");
+        const cvcElement = elements.create("cardCvc");
+        const expirationElement = elements.create("cardExpiry");
+
+        // Mount Stripe Elements
+        cardElement.mount("#card-element");
+        cvcElement.mount("#cvc-element");
+        expirationElement.mount("#expiration-element");
+
+        const form = document.getElementById("payment-form");
+        const cardErrors = document.getElementById("card-errors");
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const cardholderName =
+            document.getElementById("cardholder-name").value;
+          const country = document.getElementById("country").value;
+          const amount = "10";
+          const currency = "usd";
+
+          const { clientSecret } = await fetch("/create-payment-intent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount,
+              currency,
+              name: cardholderName,
+              country,
+            }),
+          }).then((res) => res.json());
+
+          const { error, paymentIntent } = await stripe.confirmCardPayment(
+            clientSecret,
+            {
+              payment_method: {
+                card: cardElement,
+                billing_details: {
+                  name: cardholderName,
+                },
+              },
+            }
+          );
+
+          if (error) {
+            cardErrors.style.color = "red";
+            cardErrors.textContent =
+              "Card was declined please try another method";
+              window.parent.postMessage({status:false},'*');
+            console.log(error.message);
+          } else {
+            cardErrors.style.color = "green";
+            cardErrors.textContent = paymentIntent.status;
+            window.parent.postMessage({status:true,intent:paymentIntent},'*');
+          }
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    </script>
+  </body>
+</html>
