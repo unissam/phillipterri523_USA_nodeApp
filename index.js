@@ -26,7 +26,7 @@ const dbName = envV.dbName, dbUser = envV.dbUserName, dbPass = envV.dbPass, dbHo
 const sequelize = new Sequelize(dbName, dbUser, dbPass, {
   host: dbHost,
   port: dbPort,
-  dialect: dialect
+  dialect: "mysql"
 });
 
 sequelize.authenticate()
