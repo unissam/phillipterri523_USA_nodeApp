@@ -15,18 +15,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const envV = process.env;
-
-const stripe = require('stripe')(envV.stripeSecret); // Replace with your Stripe secret key
+const stripeSecret = envV.stripeSecret;
+const stripe = require('stripe')(stripeSecret); // Replace with your Stripe secret key
 
 app.use(express.json());
 
 // #region Database
 const { Sequelize, DataTypes } = require('sequelize');
-
-const sequelize = new Sequelize(envV.dbName, envV.dbUserName, envV.dbPass, {
-  host: envV.dbHost,
-  port: envV.dbPort,
-  dialect: envV.dbDialect
+const dbName = envV.dbName, dbUser = envV.dbUserName, dbPass = envV.dbPass, dbHost = envV.dbHost, dbPort = envV.dbPort, dialect = envV.dbDialect
+const sequelize = new Sequelize(dbName, dbUser, dbPass, {
+  host: dbHost,
+  port: dbPort,
+  dialect: dialect
 });
 
 sequelize.authenticate()
@@ -98,5 +98,5 @@ app.get('/add-user', async (req, res) => {
   }
 
 });
-
-app.listen(envV.port, () => console.log('Server running on port ' + envV.port));
+const port = envV.port;
+app.listen(port, () => console.log('Server running on port ' + port));
