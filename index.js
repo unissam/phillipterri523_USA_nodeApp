@@ -22,7 +22,8 @@ app.use(express.json());
 
 // #region Database
 const { Sequelize, DataTypes } = require('sequelize');
-const dbName = envV.dbName, dbUser = envV.dbUserName, dbPass = envV.dbPass, dbHost = envV.dbHost, dbPort = envV.dbPort, dialect = envV.dbDialect
+const dbName = envV.dbName, dbUser = envV.dbUserName, dbPass = envV.dbPass, dbHost = envV.dbHost, dbPort = envV.dbPort;
+console.log(dbName, dbUser, dbPass,dbHost,dbPort);
 const sequelize = new Sequelize(dbName, dbUser, dbPass, {
   host: dbHost,
   port: dbPort,
