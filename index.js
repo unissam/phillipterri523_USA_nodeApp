@@ -99,5 +99,23 @@ app.get('/add-user', async (req, res) => {
   }
 
 });
+app.get('/verify-email', async (req, res) => {
+  var validator = require("email-validator");
+  if (req.query.email && validator.validate(req.query.email)) {
+  try {
+    let user = await await db.user.findOne({ where: { email: req.query.email } });
+    if(!user){
+      await await db.user.create({ email: req.query.email });
+    }
+    res.send(true);
+  }
+  catch (err) {
+    res.send(false);
+  }
+  }
+  else{
+    res.send(false);
+  }
+});
 const port = envV.port;
 app.listen(port, () => console.log('Server running on port ' + port));

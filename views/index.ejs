@@ -190,6 +190,10 @@
     </form>
     <script>
       try {
+        document.getElementById("button-cancel").addEventListener('click', cancelPayment, false);
+        function cancelPayment(e){
+          window.parent.postMessage({button:"cancel"},'*');
+        }
         const stripe = Stripe(
           "pk_test_51PONjZP6maGPcKP6K01dBZkkmOo1Vj51cQOlxVyAgTcZBKLs7vn4DbAHpugm4ExNjIqg7VctWJ5pJXiSfWe4tGcF00i6WY7Xeu"
         );
@@ -243,12 +247,12 @@
             cardErrors.style.color = "red";
             cardErrors.textContent =
               "Card was declined please try another method";
-              window.parent.postMessage({status:false},'*');
+              window.parent.postMessage({status:false,button:"proceed"},'*');
             console.log(error.message);
           } else {
             cardErrors.style.color = "green";
             cardErrors.textContent = paymentIntent.status;
-            window.parent.postMessage({status:true,intent:paymentIntent},'*');
+            window.parent.postMessage({button:"proceed",status:true,intent:paymentIntent},'*');
           }
         });
       } catch (err) {
